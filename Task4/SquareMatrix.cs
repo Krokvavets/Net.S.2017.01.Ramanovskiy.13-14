@@ -6,20 +6,21 @@ using System.Threading.Tasks;
 
 namespace Task4
 {
-    public class SymmetricalMatrix<T> : SquareMatrix<T>
+    public class SquareMatrix<T> : Matrix<T>
     {
+        public event EventHandler<NewMatrixEventArgs> Eevent = delegate { };
         private T[,] array;
         #region ctor
-        public SymmetricalMatrix(int n) : base(n)
+        public SquareMatrix(int n) : base(n)
         {
             array = new T[Rows, Cols];
         }
-        public SymmetricalMatrix(T[,] array) : base(array)
+        public SquareMatrix(T[,] array) : base(array)
         {
+            ;
             this.array = array;
-            if (!Equals(Transpose(this))) throw new ArgumentException();
         }
-        public SymmetricalMatrix(int n, T[] array) : base(n, array)
+        public SquareMatrix(int n, T[] array) : base(n, array)
         {
             this.array = new T[Rows, Cols];
             int cols = 0, rows = 0;
@@ -33,7 +34,6 @@ namespace Task4
                 this.array[cols, rows] = array[i];
                 rows++;
             }
-            if (!Equals(Transpose(this))) throw new ArgumentException();
         }
         #endregion
         public override T this[int index1, int index2]
@@ -47,7 +47,6 @@ namespace Task4
             {
                 if (index1 < 0 || index2 < 0) throw new ArgumentOutOfRangeException();
                 array[index1, index2] = value;
-                if (!Equals(Transpose(this))) throw new ArgumentException();
             }
         }
 
@@ -65,21 +64,31 @@ namespace Task4
             matrix.Replace(",  } ", " } ");
             return matrix.ToString();
         }
-
-
-        /// <summary>
-        /// / The method Transposes the matrix
-        /// </summary>
-        /// <param name="matrix">input matrix</param>
-        /// <returns>Transpose matrix</returns>
-        private SquareMatrix<T> Transpose(Matrix<T> matrix)
+        protected virtual void OnNewEvent(NewMatrixEventArgs e)
         {
-            SquareMatrix<T> tMatrix = new SquareMatrix<T>(matrix.Rows);
-            for (int i = 0; i < this.Rows; i++)
-                for (int j = 0; j < this.Cols; j++)
-                    tMatrix[j, i] = this[i, j];
-            return tMatrix;
+            EventHandler<NewMatrixEventArgs> temp = Eevent;
         }
 
+        public override int GetHashCode()
+        {
+            return Cols ^ Rows;
+        }
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(obj, this)) return true;
+            if (obj is SquareMatrix<T>) return Equals((SquareMatrix<T>)obj);
+            return false;
+        }
+        public bool Equals(SquareMatrix<T> obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(obj, this)) return true;
+            for (int i = 0; i < array.GetLength(0); i++)
+                for (int j = 0; j < array.GetLength(1); j++)
+                    if (!obj[i, j].Equals(this[i, j]))
+                        return false;
+            return true;
+        }
     }
 }

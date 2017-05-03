@@ -6,26 +6,69 @@ using System.Threading.Tasks;
 
 namespace Task4
 {
-    public class DiagonalMatrix<T> : Matrix<T>
+    public class DiagonalMatrix<T> : SquareMatrix<T>
     {
-        public DiagonalMatrix(int rows, int cols) : base(rows, cols)
+        public new event EventHandler<NewMatrixEventArgs> Eevent = delegate { };
+        private T[] diagonal;
+        public DiagonalMatrix(int n) : base(n)
         {
-            MatrixChecker();
+            diagonal = new T[Rows];
         }
-        public DiagonalMatrix(int rows, int cols, T[] array) : base(rows, cols, array)
+        public DiagonalMatrix(int n, T[] array) : base(n, array)
         {
-            MatrixChecker();
+            int j = 0;
+            diagonal = new T[Rows];
+            for (int i = 0; i < n; i++)
+            {
+                diagonal[i] = array[j];
+                j += n + 1;
+            }
+
+
         }
         public DiagonalMatrix(T[,] array) : base(array)
         {
-            MatrixChecker();
+            diagonal = new T[Rows];
+            for (int i = 0; i < Rows; i++)
+                diagonal[i] = array[i, i];
+        }
+        public override T this[int index1, int index2]
+        {
+            get
+            {
+                if (index1 < 0 || index2 < 0) throw new ArgumentOutOfRangeException();
+                if (index1 != index2) return default(T);
+                return diagonal[index1];
+            }
+            set
+            {
+                if (index1 < 0 || index2 < 0) throw new ArgumentOutOfRangeException();
+                if (index1 != index2) throw new ArgumentException("You can't change value not owned the main diagonal");
+                diagonal[index1] = value;
+                OnNewEvent(new NewMatrixEventArgs(index1, index2));
+            }
+
         }
 
-        private void MatrixChecker()
+        public override string ToString()
         {
-            for (int i = 0; i < this.Rows; i++)
-                for (int j = 0; j < this.Cols; j++)
-                    if (j != i && !this[i, j].Equals(default(T))) throw new ArgumentException();
+            StringBuilder matrix = new StringBuilder();
+            for (int i = 0; i < Cols; i++)
+            {
+                matrix.Append("{ ");
+                for (int j = 0; j < Rows; j++)
+                {
+                    if (i == j)
+                        matrix.Append(diagonal[i] + ", ");
+                    else
+                        matrix.Append(default(T) + ", ");
+                }
+
+                matrix.Append(" } ");
+            }
+            matrix.Replace("{  } ", "");
+            matrix.Replace(",  } ", " } ");
+            return matrix.ToString();
         }
     }
 }
