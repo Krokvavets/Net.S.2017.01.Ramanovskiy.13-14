@@ -8,20 +8,34 @@ namespace Task4
 {
     public class SymmetricalMatrix<T> : SquareMatrix<T>
     {
-        private T[,] array;
+        private T[][] triangle;
         #region ctor
         public SymmetricalMatrix(int n) : base(n)
         {
-            array = new T[Rows, Cols];
+            triangle = new T[Rows][];
         }
         public SymmetricalMatrix(T[,] array) : base(array)
         {
-            this.array = array;
-            if (!Equals(Transpose(this))) throw new ArgumentException();
+            triangle = new T[Rows][];
+            T[] temp = new T[Rows];
+            int n;
+            for (int i = 0; i < Rows; i++)
+            {
+                n = 0;
+                for (int j = i; i < Rows; j++)
+                {
+                    temp = new T[Rows - i];
+                    temp[n] = array[i, j];
+                    n++;
+                }
+                triangle[i] = new T[temp.Length];
+                Array.Copy(temp, triangle[i], temp.Length);
+            }
+                
         }
         public SymmetricalMatrix(int n, T[] array) : base(n, array)
         {
-            this.array = new T[Rows, Cols];
+            T [,] inarray = new T[Rows, Cols];
             int cols = 0, rows = 0;
             for (int i = 0; i < array.Length; i++)
             {
@@ -30,9 +44,25 @@ namespace Task4
                     rows = 0;
                     cols++;
                 }
-                this.array[cols, rows] = array[i];
+                inarray[cols, rows] = array[i];
                 rows++;
             }
+            triangle = new T[Rows][];
+            T[] temp = new T[Rows];
+            int k;
+            for (int i = 0; i < Rows; i++)
+            {
+                k = 0;
+                for (int j = i; i < Rows; j++)
+                {
+                    temp = new T[Rows - i];
+                    temp[k] = inarray[i, j];
+                    k++;
+                }
+                triangle[i] = new T[temp.Length];
+                Array.Copy(temp, triangle[i], temp.Length);
+            }
+
             if (!Equals(Transpose(this))) throw new ArgumentException();
         }
         #endregion
@@ -40,25 +70,28 @@ namespace Task4
         {
             get
             {
-                if (index1 < 0 || index2 < 0) throw new ArgumentOutOfRangeException();
-                return array[index1, index2];
+                if (index1 < 0 || index2 < 0 || index1 > Rows || index2 > Rows) throw new ArgumentOutOfRangeException();
+                if (triangle[index1].Length < index2)
+                    return triangle[index2][index1];
+                return triangle[index2][index1];
             }
             set
             {
-                if (index1 < 0 || index2 < 0) throw new ArgumentOutOfRangeException();
-                array[index1, index2] = value;
-                if (!Equals(Transpose(this))) throw new ArgumentException();
+                if (index1 < 0 || index2 < 0 || index1 > Rows || index2 > Rows) throw new ArgumentOutOfRangeException();
+                if (triangle[index1].Length < index2)
+                    triangle[index2][index1] = value;
+                triangle[index1][index2] = value;
             }
         }
 
         public override string ToString()
         {
             StringBuilder matrix = new StringBuilder();
-            for (int i = 0; i < array.GetLength(0); i++)
+            for (int i = 0; i < Rows; i++)
             {
                 matrix.Append("{ ");
-                for (int j = 0; j < array.GetLength(1); j++)
-                    matrix.Append(array[i, j] + ", ");
+                for (int j = 0; j < Cols; j++)
+                    matrix.Append(this[i, j] + ", ");
                 matrix.Append(" } ");
             }
             matrix.Replace("{  } ", "");

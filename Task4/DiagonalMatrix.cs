@@ -23,8 +23,6 @@ namespace Task4
                 diagonal[i] = array[j];
                 j += n + 1;
             }
-
-
         }
         public DiagonalMatrix(T[,] array) : base(array)
         {
@@ -43,8 +41,8 @@ namespace Task4
             set
             {
                 if (index1 < 0 || index2 < 0) throw new ArgumentOutOfRangeException();
-                if (index1 != index2) throw new ArgumentException("You can't change value not owned the main diagonal");
-                diagonal[index1] = value;
+                if (!value.Equals(default(T)) && index1 != index2) throw new ArgumentException("You can't change value not owned the main diagonal");
+                if(index1 != index2)diagonal[index1] = value;
                 OnNewEvent(new NewMatrixEventArgs(index1, index2));
             }
 
